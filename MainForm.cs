@@ -1,58 +1,114 @@
 using System;
 using System.Data;
-using System.Data.SqlClient;
+using System.Net;
+using System.Net.Mail;
+using Newtonsoft.Json;
 using System.IO;
 using System.Windows.Forms;
-using System.Xml;
-using Newtonsoft.Json;
+using static System.Net.WebRequestMethods;
+using System.Data.SqlClient;
 
-namespace Query_Database
+
+namespace Query_Database_2
 {
     public partial class MainForm : Form
     {
         public MainForm()
         {
-            InitializeComponent();  // This method initializes all controls on the form
-        }
-
-        private void InitializeComponent()
-        {
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
-            this.SuspendLayout();
-
-            // 
-            // dataGridView1
-            // 
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(12, 12);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(760, 450);
-            this.dataGridView1.TabIndex = 0;
-
-            // 
-            // MainForm
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.dataGridView1);
-            this.Name = "MainForm";
-            this.Text = "Query Results";
+            InitializeComponent();
             this.Load += new System.EventHandler(this.MainForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
-            this.ResumeLayout(false);
+
         }
 
-        private System.Windows.Forms.DataGridView dataGridView1;
-
-
+        // This method is triggered when the form is loaded
         private void MainForm_Load(object sender, EventArgs e)
         {
-            // Connection string for SQL Server
+            // Load data into the grid (you should implement the GetDataFromDatabase method)
+            DataTable dataTable = GetDataFromDatabase(); // Your database fetch method
+            dataGridView1.DataSource = dataTable;
+            dataGridView2.DataSource = dataTable;
+
+            // Save the DataTable to a JSON file
+            SaveDataTableToJsonFile(dataTable, "C:\\Software Development\\Files\\file.json");
+
+
+            //SendEmailWithAttachment("C:\\Software Development\\Files\\file.json");
+
+        }
+
+        // Method that converts DataTable to JSON
+        private string DataTableToJson(DataTable dataTable)
+        {
+            return JsonConvert.SerializeObject(dataTable, Newtonsoft.Json.Formatting.Indented);
+        }
+
+        // Method that saves DataTable to a JSON file
+        private void SaveDataTableToJsonFile(DataTable dataTable, string filePath)
+        {
+            string json = DataTableToJson(dataTable);
+            System.IO.File.WriteAllText(filePath, json);
+        }
+
+        // This is the method that handles sending the email when the button is clicked
+        private void sendEmailButton_Click(object sender, EventArgs e)
+        {
+            // Path to the JSON file
+            string filePath = "C:\\Software Development\\Files\\file.json";
+            //string filePath = "C:\\Software Development\\Files\\output.json\";
+            // Ensure the file exists before sending email
+            if (System.IO.File.Exists(filePath))
+            {
+                SendEmailWithAttachment(filePath);
+            }
+            else
+            {
+                MessageBox.Show("JSON file not found. Please generate it first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Method that sends an email with the JSON file attached
+
+        private void SendEmailWithAttachment(string filePath)
+        {
+            try
+            {
+
+                // Create the email message
+                MailMessage mail = new MailMessage();
+                mail.From = new MailAddress("dglanville@gmail.com"); // Your email
+                mail.To.Add("dglanville@gmail.com"); // Recipient's email
+                mail.Subject = "JSON File Attachment";
+                mail.Body = "Please find the attached JSON file.";
+
+                // Attach the JSON file
+                Attachment attachment = new Attachment(filePath);
+                mail.Attachments.Add(attachment);
+
+                // Set up the SMTP client
+                SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", 587); // Use Gmail SMTP server and port
+                smtpClient.Credentials = new NetworkCredential("dglanville@gmail.com", "eqci zhqi aqhd rakp"); // Use App Password
+                smtpClient.EnableSsl = true; // Enable SSL for secure connection
+
+                // Send the email
+                smtpClient.Send(mail);
+
+                // Inform the user
+                MessageBox.Show("Email sent successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                // Display any error messages
+                MessageBox.Show($"Error sending email: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // You should implement this method to fetch data from the database
+        private DataTable GetDataFromDatabase()
+        {
+            // Connection string for your SQL Server database
             string connectionString = "Server=HFMS-5CG9254D8Q;Database=AdventureWorks2022;Integrated Security=True;";
 
-            // SQL query to fetch data
+            // SQL query to fetch employee data
             string query = "SELECT [Name], [GroupName], [ModifiedDate] FROM [AdventureWorks2022].[HumanResources].[Department]";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -70,46 +126,40 @@ namespace Query_Database
                     DataTable dataTable = new DataTable();
                     adapter.Fill(dataTable);
 
-                    // Bind the DataTable to the DataGridView
-                    dataGridView1.DataSource = dataTable;
+                    return dataTable;
 
-                    // Convert DataTable to JSON and save to file
-                    string json = DataTableToJson(dataTable);
-                    string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "output.json");
-                    File.WriteAllText(filePath, json);
+                    //// Bind the DataTable to the DataGridView
+                    //dataGridView1.DataSource = dataTable;
 
-                    // Show message that the JSON file was saved
-                    MessageBox.Show($"Data exported to JSON file: {filePath}");
+                    //// Convert the DataTable to JSON
+                    //string json = DataTableToJson(dataTable);
+
+                    //// Specify the file path
+                    //string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "output.json");
+
+                    //// Write JSON to a file
+                    //System.IO.File.WriteAllText(filePath, json);
+
+                    ////MessageBox.Show($"Data exported to JSON file: {filePath}");
+
+                    //return  dataTable;
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show("An error occurred: " + ex.Message);
+                    return new DataTable();
                 }
             }
         }
-       // This method takes a DataTable and converts it to a JSON string
-    private string DataTableToJson(DataTable dataTable)
-{
-    // Fully qualify the Formatting enum to avoid ambiguity
-    return Newtonsoft.Json.JsonConvert.SerializeObject(dataTable, Newtonsoft.Json.Formatting.Indented);
-}
 
-
-
-
-        private void SaveDataTableToJsonFile(DataTable dataTable, string filePath)
+        private void button1_Click(object sender, EventArgs e)
         {
-            // Convert the DataTable to a JSON string
-            string json = DataTableToJson(dataTable);
-
-            // Write the JSON string to a file
-            File.WriteAllText(filePath, json);
+            SendEmailWithAttachment("C:\\Software Development\\Files\\file.json");
         }
 
-        // Helper method to convert DataTable to JSON
-        //private string DataTableToJson(DataTable table)
-        //{
-        //    return JsonConvert.SerializeObject(table, Formatting.Indented);
-        //}
+        private void button2_Click(object sender, EventArgs e)
+        {
+            System.Windows.Forms.Application.Exit(); ;
+        }
     }
 }

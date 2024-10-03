@@ -10,7 +10,7 @@ namespace Query_Database
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            Application.Run(new Query_Database_2.MainForm());
         }
     }
 }
