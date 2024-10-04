@@ -1,4 +1,5 @@
 using System;
+using System.Configuration;
 using System.Windows.Forms;
 
 namespace Query_Database
@@ -8,7 +9,7 @@ namespace Query_Database
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
+                 Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Query_Database_2.MainForm());
         }

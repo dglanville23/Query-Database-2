@@ -7,6 +7,7 @@ using System.IO;
 using System.Windows.Forms;
 using static System.Net.WebRequestMethods;
 using System.Data.SqlClient;
+using System.Configuration;
 
 
 namespace Query_Database_2
@@ -28,9 +29,10 @@ namespace Query_Database_2
             dataGridView1.DataSource = dataTable;
             dataGridView2.DataSource = dataTable;
 
+            string jsonFilePath = ConfigurationManager.AppSettings["JsonFilePath"];
+            
             // Save the DataTable to a JSON file
-            SaveDataTableToJsonFile(dataTable, "C:\\Software Development\\Files\\file.json");
-
+            SaveDataTableToJsonFile(dataTable, jsonFilePath);
 
             //SendEmailWithAttachment("C:\\Software Development\\Files\\file.json");
 
@@ -43,17 +45,18 @@ namespace Query_Database_2
         }
 
         // Method that saves DataTable to a JSON file
-        private void SaveDataTableToJsonFile(DataTable dataTable, string filePath)
+        private void SaveDataTableToJsonFile(DataTable dataTable, string jsonFilePath)
         {
             string json = DataTableToJson(dataTable);
-            System.IO.File.WriteAllText(filePath, json);
+            System.IO.File.WriteAllText(jsonFilePath, json);
         }
 
         // This is the method that handles sending the email when the button is clicked
         private void sendEmailButton_Click(object sender, EventArgs e)
         {
             // Path to the JSON file
-            string filePath = "C:\\Software Development\\Files\\file.json";
+            string filePath = ConfigurationManager.AppSettings["JsonFilePath"];
+
             //string filePath = "C:\\Software Development\\Files\\output.json\";
             // Ensure the file exists before sending email
             if (System.IO.File.Exists(filePath))
@@ -154,7 +157,8 @@ namespace Query_Database_2
 
         private void button1_Click(object sender, EventArgs e)
         {
-            SendEmailWithAttachment("C:\\Software Development\\Files\\file.json");
+            SendEmailWithAttachment(ConfigurationManager.AppSettings["JsonFilePath"]);
+         
         }
 
         private void button2_Click(object sender, EventArgs e)
