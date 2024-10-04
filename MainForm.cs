@@ -8,6 +8,10 @@ using System.Windows.Forms;
 using static System.Net.WebRequestMethods;
 using System.Data.SqlClient;
 using System.Configuration;
+using Newtonsoft.Json.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+
 
 
 namespace Query_Database_2
@@ -21,6 +25,8 @@ namespace Query_Database_2
 
         }
 
+
+
         // This method is triggered when the form is loaded
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -30,7 +36,7 @@ namespace Query_Database_2
             dataGridView2.DataSource = dataTable;
 
             string jsonFilePath = ConfigurationManager.AppSettings["JsonFilePath"];
-            
+
             // Save the DataTable to a JSON file
             SaveDataTableToJsonFile(dataTable, jsonFilePath);
 
@@ -131,21 +137,6 @@ namespace Query_Database_2
 
                     return dataTable;
 
-                    //// Bind the DataTable to the DataGridView
-                    //dataGridView1.DataSource = dataTable;
-
-                    //// Convert the DataTable to JSON
-                    //string json = DataTableToJson(dataTable);
-
-                    //// Specify the file path
-                    //string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "output.json");
-
-                    //// Write JSON to a file
-                    //System.IO.File.WriteAllText(filePath, json);
-
-                    ////MessageBox.Show($"Data exported to JSON file: {filePath}");
-
-                    //return  dataTable;
                 }
                 catch (Exception ex)
                 {
@@ -155,15 +146,144 @@ namespace Query_Database_2
             }
         }
 
+
+
+        //public partial class MainForm : Form
+        //    {
+
+
+        // Event handler for the Fetch Weather button
+        //private async void fetchWeatherButton_Click(object sender, EventArgs e)
+        //{
+        //    try
+        //    {
+        //        // Get weather data for New York City
+        //        string weatherData = await GetWeatherDataAsync("New York");
+        //        MessageBox.Show(weatherData, "Weather Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Error fetching weather data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //    }
+        //}
+
         private void button1_Click(object sender, EventArgs e)
         {
             SendEmailWithAttachment(ConfigurationManager.AppSettings["JsonFilePath"]);
-         
+
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             System.Windows.Forms.Application.Exit(); ;
         }
+
+
+        // Event handler for the Fetch Weather button
+        private async void fetchWeatherButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Get weather data for New York City
+                string weatherData = await GetWeatherDataAsync("New York");
+                MessageBox.Show(weatherData, "Weather Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error fetching weather data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // Async method to fetch weather data from OpenWeatherMap API
+        private async Task<string> GetWeatherDataAsync(string city)
+        {
+            string apiKey = ConfigurationManager.AppSettings["WeatherApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new Exception("Weather API key is not configured in App.config.");
+            }
+
+            // Debugging: Display the API key to ensure it's passed correctly
+            MessageBox.Show($"Using API Key: {apiKey}");
+
+            string apiUrl = $"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={apiKey}&units=metric";
+
+            using (HttpClient client = new HttpClient())
+            {
+                try
+                {
+                    HttpResponseMessage response = await client.GetAsync(apiUrl);
+
+                    // Log status code for debugging
+                    MessageBox.Show($"HTTP Status Code: {response.StatusCode}");
+
+                    response.EnsureSuccessStatusCode();
+
+                    // Parse the response JSON
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+                    JObject weatherJson = JObject.Parse(jsonResponse);
+
+                    // Extract necessary weather information
+                    string description = weatherJson["weather"][0]["description"].ToString();
+                    string temp = weatherJson["main"]["temp"].ToString();
+                    string humidity = weatherJson["main"]["humidity"].ToString();
+
+                    return $"Weather in {city}:\n" +
+                           $"Description: {description}\n" +
+                           $"Temperature: {temp}°C\n" +
+                           $"Humidity: {humidity}%";
+                }
+                catch (HttpRequestException httpEx)
+                {
+                    throw new Exception($"Error with the HTTP request: {httpEx.Message}");
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"An error occurred: {ex.Message}");
+                }
+            }
+        }
+
+
+        private async void fetchWeatherButton_Click_1(object sender, EventArgs e)
+        {
+            try
+            {
+                // Get the city name from the txtCity textbox
+                string city = txtCity.Text.Trim();
+
+                // Validate that a city name is entered
+                if (string.IsNullOrEmpty(city))
+                {
+                    MessageBox.Show("Please enter a city name.", "Input Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Fetch the weather data for the city entered in the textbox
+                string weatherData = await GetWeatherDataAsync(city);
+                MessageBox.Show(weatherData, "Weather Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error fetching weather data: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
     }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
