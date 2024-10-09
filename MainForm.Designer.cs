@@ -16,7 +16,12 @@
             fetchWeatherButton = new Button();
             txtCity = new TextBox();
             toolTip1 = new ToolTip(components);
-            listView1 = new ListView();
+            lstWeather = new ListView();
+            label1 = new Label();
+            lstView = new ListView();
+            lstView2 = new ListView();
+            Description = new ColumnHeader();
+            Value = new ColumnHeader();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             SuspendLayout();
@@ -33,17 +38,17 @@
             // dataGridView2
             // 
             dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView2.Location = new Point(45, 12);
+            dataGridView2.Location = new Point(50, 95);
             dataGridView2.Name = "dataGridView2";
             dataGridView2.RowHeadersWidth = 72;
-            dataGridView2.Size = new Size(428, 523);
+            dataGridView2.Size = new Size(373, 371);
             dataGridView2.TabIndex = 0;
             // 
             // button1
             // 
-            button1.Location = new Point(889, 41);
+            button1.Location = new Point(446, 477);
             button1.Name = "button1";
-            button1.Size = new Size(200, 93);
+            button1.Size = new Size(200, 42);
             button1.TabIndex = 1;
             button1.Text = "Send email";
             button1.UseVisualStyleBackColor = true;
@@ -51,9 +56,9 @@
             // 
             // button2
             // 
-            button2.Location = new Point(919, 276);
+            button2.Location = new Point(850, 477);
             button2.Name = "button2";
-            button2.Size = new Size(170, 74);
+            button2.Size = new Size(177, 39);
             button2.TabIndex = 2;
             button2.Text = "Exit";
             button2.UseVisualStyleBackColor = true;
@@ -61,33 +66,73 @@
             // 
             // fetchWeatherButton
             // 
-            fetchWeatherButton.Location = new Point(897, 149);
+            fetchWeatherButton.Location = new Point(652, 477);
             fetchWeatherButton.Name = "fetchWeatherButton";
-            fetchWeatherButton.Size = new Size(192, 43);
+            fetchWeatherButton.Size = new Size(192, 39);
             fetchWeatherButton.TabIndex = 3;
-            fetchWeatherButton.Text = "NYC Weather";
+            fetchWeatherButton.Text = "Fetch Weather";
             fetchWeatherButton.UseVisualStyleBackColor = true;
             fetchWeatherButton.Click += fetchWeatherButton_Click_1;
             // 
             // txtCity
             // 
-            txtCity.Location = new Point(539, 41);
+            txtCity.Location = new Point(652, 54);
             txtCity.Name = "txtCity";
             txtCity.Size = new Size(168, 35);
             txtCity.TabIndex = 4;
             // 
-            // listView1
+            // lstWeather
             // 
-            listView1.Location = new Point(539, 92);
-            listView1.Name = "listView1";
-            listView1.Size = new Size(275, 371);
-            listView1.TabIndex = 5;
-            listView1.UseCompatibleStateImageBehavior = false;
+            lstWeather.GridLines = true;
+            lstWeather.Location = new Point(1195, 373);
+            lstWeather.Name = "lstWeather";
+            lstWeather.Size = new Size(83, 54);
+            lstWeather.TabIndex = 5;
+            lstWeather.UseCompatibleStateImageBehavior = false;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(532, 54);
+            label1.Name = "label1";
+            label1.Size = new Size(102, 30);
+            label1.TabIndex = 6;
+            label1.Text = "Enter City";
+            label1.Click += label1_Click;
+            // 
+            // lstView
+            // 
+            lstView.Location = new Point(487, 619);
+            lstView.Name = "lstView";
+            lstView.Size = new Size(206, 91);
+            lstView.TabIndex = 7;
+            lstView.UseCompatibleStateImageBehavior = false;
+            // 
+            // lstView2
+            // 
+            lstView2.Columns.AddRange(new ColumnHeader[] { Description, Value });
+            lstView2.Location = new Point(446, 105);
+            lstView2.Name = "lstView2";
+            lstView2.Size = new Size(581, 361);
+            lstView2.TabIndex = 8;
+            lstView2.UseCompatibleStateImageBehavior = false;
+            lstView2.View = View.Details;
+            // 
+            // Description
+            // 
+            Description.Width = 150;
+            // 
+            // Value
+            // 
+            Value.Width = 100;
             // 
             // MainForm
             // 
             ClientSize = new Size(1647, 601);
-            Controls.Add(listView1);
+            Controls.Add(lstView2);
+            Controls.Add(lstView);
+            Controls.Add(label1);
+            Controls.Add(lstWeather);
             Controls.Add(txtCity);
             Controls.Add(fetchWeatherButton);
             Controls.Add(button2);
@@ -107,6 +152,11 @@
         private Button fetchWeatherButton;
         private TextBox txtCity;
         private ToolTip toolTip1;
-        private ListView listView1;
+        private ListView lstWeather;
+        private Label label1;
+        private ListView lstView;
+        private ListView lstView2;
+        private ColumnHeader Description;
+        private ColumnHeader Value;
     }
 }

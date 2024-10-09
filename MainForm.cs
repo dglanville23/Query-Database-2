@@ -203,9 +203,6 @@ namespace Query_Database_2
                 throw new Exception("Weather API key is not configured in App.config.");
             }
 
-            // Debugging: Display the API key to ensure it's passed correctly
-            MessageBox.Show($"Using API Key: {apiKey}");
-
             string apiUrl = $"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={apiKey}&units=metric";
 
             using (HttpClient client = new HttpClient())
@@ -214,9 +211,7 @@ namespace Query_Database_2
                 {
                     HttpResponseMessage response = await client.GetAsync(apiUrl);
 
-                    // Log status code for debugging
-                    MessageBox.Show($"HTTP Status Code: {response.StatusCode}");
-
+                    // Ensure the request was successful
                     response.EnsureSuccessStatusCode();
 
                     // Parse the response JSON
@@ -249,19 +244,62 @@ namespace Query_Database_2
         {
             try
             {
-                // Get the city name from the txtCity textbox
                 string city = txtCity.Text.Trim();
 
-                // Validate that a city name is entered
                 if (string.IsNullOrEmpty(city))
                 {
                     MessageBox.Show("Please enter a city name.", "Input Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                // Fetch the weather data for the city entered in the textbox
                 string weatherData = await GetWeatherDataAsync(city);
+
                 MessageBox.Show(weatherData, "Weather Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Clear the ListBox before adding new data
+                lstWeather.Items.Clear();
+                // Clear the ListView before adding new data
+                lstView2.Items.Clear();
+
+                // Add the header (column names) in the ListBox
+                lstWeather.Items.Add($"{"Description".PadRight(20)}{"Value".PadRight(20)}");
+                lstWeather.Items.Add(new string('-', 40)); // Separator line
+
+                // Add the formatted weather data to ListBox and ListView
+                string[] wrappedData = FormatWeatherDataForListBox(weatherData);
+                foreach (string line in wrappedData)
+                {
+                    string[] splitLine = line.Split(new[] { ':' }, 2);
+                    if (splitLine.Length == 2)
+                    {
+                        string description = splitLine[0].Trim();
+                        string value = splitLine[1].Trim();
+
+                        // Check if the line contains temperature data
+                        if (description.ToLower().Contains("temperature"))
+                        {
+                            // Parse Celsius value and calculate Fahrenheit
+                            if (double.TryParse(value.Replace("°C", "").Trim(), out double celsius))
+                            {
+                                double fahrenheit = (celsius * 9 / 5) + 32;
+                                value = $"{celsius}°C ({fahrenheit:F1}°F)";
+                            }
+                        }
+
+                        // Format the columns: pad the first column (description) and second column (value) in ListBox
+                        string formattedLine = $"{description.PadRight(20)}{value.PadRight(20)}";
+                        lstWeather.Items.Add(formattedLine);
+
+                        // Add to ListView as well (Description and Value as separate columns)
+                        ListViewItem listViewItem = new ListViewItem(description);
+                        listViewItem.SubItems.Add(value);
+                        lstView2.Items.Add(listViewItem);
+                    }
+                    else
+                    {
+                        lstWeather.Items.Add(line); // Add unformatted if not split
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -269,9 +307,24 @@ namespace Query_Database_2
             }
         }
 
-    }
+        // Method to format and wrap the weather data for easier reading in the ListBox
+        private string[] FormatWeatherDataForListBox(string weatherData)
+        {
+            // Split the string into lines based on the new line characters
+            return weatherData.Split(new[] { '\n' }, StringSplitOptions.None);
+        }
 
+
+
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
 }
+
+
 
 
 
